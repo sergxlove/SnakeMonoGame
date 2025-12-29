@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="SnakeMonoGame.Core/SnakeMonoGame.Core.csproj" Id="150b16dc-1a39-4b89-85cc-f4c40ace6119" />
+  <Project Path="SnakeMonoGame/SnakeMonoGame.csproj" />
+</Solution>
