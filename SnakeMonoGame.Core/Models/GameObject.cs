@@ -27,7 +27,92 @@ namespace SnakeMonoGame.Core.Models
             new(2, 5)
         };
         public PairCoordinate Apple { get; set; } = new PairCoordinate(10, 5);
+        private Random _random = new Random();
 
+        public void MoveSnake(VariableMove move, bool isEatApple)
+        {
+            List<PairCoordinate> newSnake = new List<PairCoordinate>(Snake.Count);
+            PairCoordinate positionHead;
+            switch (move)
+            {
+                case VariableMove.Up:
+                    positionHead = new PairCoordinate(Snake[0].X, Snake[0].Y - 1);
+                    break;
+                case VariableMove.Down:
+                    positionHead = new PairCoordinate(Snake[0].X, Snake[0].Y + 1);
+                    break;
+                case VariableMove.Left:
+                    positionHead = new PairCoordinate(Snake[0].X - 1, Snake[0].Y);
+                    break;
+                case VariableMove.Rigth:
+                    positionHead = new PairCoordinate(Snake[0].X + 1, Snake[0].Y);
+                    break;
+                default:
+                    positionHead = new PairCoordinate(0, 0);
+                    break;
+            }
+            newSnake.Add(positionHead);
+            if(isEatApple)
+            {
+                newSnake.AddRange(Snake);
+            }
+            else
+            {
+                for (int i = 0; newSnake.Count != Snake.Count; i++)
+                {
+                    newSnake.Add(Snake[i]);
+                }
+            }
+            Snake = newSnake;
+        }
+
+        public bool CheckMoveSnake(VariableMove move)
+        {
+            PairCoordinate positionHead;
+            switch (move)
+            {
+                case VariableMove.Up:
+                    positionHead = new PairCoordinate(Snake[0].X, Snake[0].Y - 1);
+                    break;
+                case VariableMove.Down:
+                    positionHead = new PairCoordinate(Snake[0].X, Snake[0].Y + 1);
+                    break;
+                case VariableMove.Left:
+                    positionHead = new PairCoordinate(Snake[0].X - 1, Snake[0].Y);
+                    break;
+                case VariableMove.Rigth:
+                    positionHead = new PairCoordinate(Snake[0].X + 1, Snake[0].Y);
+                    break;
+                default:
+                    positionHead = new PairCoordinate(0, 0);
+                    break;
+            }
+            if (Field[positionHead.Y, positionHead.X] == GameObject.Wall) return false;
+            return true;
+        }
+
+        public void GenerateApple()
+        {
+            bool isGenerate = false;
+            int x = 0;
+            int y = 0;
+            while(!isGenerate)
+            {
+                x = _random.Next(1, 13);
+                y = _random.Next(1, 11);
+                isGenerate = true;
+                foreach(PairCoordinate pr in Snake)
+                {
+                    if(pr.X == x && pr.Y == y)
+                    {
+                        isGenerate = false;
+                        break;
+                    }
+                }
+            }
+            Apple.X = x;
+            Apple.Y = y;
+        }
     }
 
     public class PairCoordinate
@@ -51,5 +136,14 @@ namespace SnakeMonoGame.Core.Models
         SnakeBody = 5,
         SnakeEnd = 6,
         Apple = 7
+    }
+
+    public enum VariableMove
+    {
+        None = 0,
+        Up = 1,
+        Left = 2, 
+        Down = 3, 
+        Rigth = 4
     }
 }
