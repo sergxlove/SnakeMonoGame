@@ -17,6 +17,10 @@ namespace SnakeMonoGame
         private Point _spriteSize = new Point(7, 1);
         private GameField _field;
         private int _needFrame = 0;
+        private VariableMove _currentMove = VariableMove.Rigth;
+        private int _speedSnake = 7;
+        private int _cuurentSpeedSnake = 0;
+        private bool _isEatApple = false;
 
         public Game1()
         {
@@ -61,13 +65,40 @@ namespace SnakeMonoGame
                 switch (key)
                 {
                     case Keys.W:
+                        if (_currentMove == VariableMove.Up) continue;
+                        if (_currentMove == VariableMove.Down) continue;
+                        _currentMove = VariableMove.Up;
                         break;
                     case Keys.A:
+                        if (_currentMove == VariableMove.Left) continue;
+                        if (_currentMove == VariableMove.Rigth) continue;
+                        _currentMove = VariableMove.Left;
                         break;
                     case Keys.S:
+                        if (_currentMove == VariableMove.Down) continue;
+                        if (_currentMove == VariableMove.Up) continue;
+                        _currentMove = VariableMove.Down;
                         break;
                     case Keys.D:
+                        if (_currentMove == VariableMove.Rigth) continue;
+                        if (_currentMove == VariableMove.Left) continue;
+                        _currentMove = VariableMove.Rigth;
                         break;
+                }
+            }
+            if (_field.CheckMoveSnake(_currentMove))
+            {
+                if (_cuurentSpeedSnake == _speedSnake)
+                {
+                    _isEatApple = CollideApple();
+                    _field.MoveSnake(_currentMove, _isEatApple);
+                    if (_isEatApple) _field.GenerateApple();
+                    _cuurentSpeedSnake = 0;
+                    _isEatApple = false;
+                }
+                else
+                {
+                    _cuurentSpeedSnake++;
                 }
             }
 
@@ -94,6 +125,12 @@ namespace SnakeMonoGame
                 _position.Y += _frameSize; 
             }
 
+            _needFrame = 6;
+            _position.X = _field.Apple.X * _frameSize;
+            _position.Y = _field.Apple.Y * _frameSize;
+            _spriteBatch.Draw(_texture, _position, _frames[_needFrame], Color.White, 0,
+                    Vector2.Zero, 1, SpriteEffects.None, 0);
+
             _needFrame = 3;
             _position.X = _field.Snake[0].X * _frameSize;
             _position.Y = _field.Snake[0].Y * _frameSize;
@@ -108,18 +145,12 @@ namespace SnakeMonoGame
                     Vector2.Zero, 1, SpriteEffects.None, 0);
             }
 
-            _needFrame = 6;
-            _position.X = _field.Apple.X * _frameSize;
-            _position.Y = _field.Apple.Y * _frameSize;
-            _spriteBatch.Draw(_texture, _position, _frames[_needFrame], Color.White, 0,
-                    Vector2.Zero, 1, SpriteEffects.None, 0);
-
             _spriteBatch.End();
 
             base.Draw(gameTime);
         }
 
-        private int GameObjectToInt(GameObject gameObject)
+        protected int GameObjectToInt(GameObject gameObject)
         {
             switch (gameObject)
             {
@@ -140,6 +171,16 @@ namespace SnakeMonoGame
                 default:
                     return 0;
             }
+        }
+
+        protected bool CollideApple()
+        {
+            Rectangle headSnakeRectangle = new Rectangle(_field.Snake[0].X * _frameSize, 
+                _field.Snake[0].Y * _frameSize, _frameSize, _frameSize);
+            Rectangle appleRectangle = new Rectangle(_field.Apple.X * _frameSize,
+                _field.Apple.Y * _frameSize, _frameSize, _frameSize);
+            return headSnakeRectangle.Intersects(appleRectangle);
+
         }
     }
 }
