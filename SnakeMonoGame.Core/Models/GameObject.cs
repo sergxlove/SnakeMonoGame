@@ -90,6 +90,10 @@ namespace SnakeMonoGame.Core.Models
                     break;
             }
             if (Field[positionHead.Y, positionHead.X] == GameObject.Wall) return false;
+            foreach(PairCoordinate pr in  Snake)
+            {
+                if (pr.X == positionHead.X && pr.Y == positionHead.Y) return false;
+            }
             return true;
         }
 
@@ -114,6 +118,18 @@ namespace SnakeMonoGame.Core.Models
             }
             Apple.X = x;
             Apple.Y = y;
+        }
+
+        public void RestartGame()
+        {
+            Snake = new List<PairCoordinate>()
+            {
+                new(4, 5),
+                new(3, 5),
+                new(2, 5)
+            };
+            Apple = new PairCoordinate(10, 5);
+            SizeSnake = 3;
         }
     }
 
