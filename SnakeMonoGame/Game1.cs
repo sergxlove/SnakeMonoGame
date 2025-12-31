@@ -9,6 +9,7 @@ namespace SnakeMonoGame
     {
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
+        private SpriteFont _font;
         private Texture2D _texture;
         private Vector2 _position = new Vector2(0, 0);
         private Rectangle[] _frames;
@@ -28,7 +29,7 @@ namespace SnakeMonoGame
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
             TargetElapsedTime = new System.TimeSpan(0, 0, 0, 0, 50);
-            _graphics.PreferredBackBufferWidth = 800;
+            _graphics.PreferredBackBufferWidth = 700;
             _graphics.PreferredBackBufferHeight = 800;
             _frames = new Rectangle[7];
             _field = new GameField();
@@ -43,6 +44,7 @@ namespace SnakeMonoGame
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             _texture = Content.Load<Texture2D>("texturesGame");
+            _font = Content.Load<SpriteFont>("Arial");
 
             for (int i = 0; _currentFrame.X < _spriteSize.X; i++)
             {
@@ -144,7 +146,10 @@ namespace SnakeMonoGame
                 _spriteBatch.Draw(_texture, _position, _frames[_needFrame], Color.White, 0,
                     Vector2.Zero, 1, SpriteEffects.None, 0);
             }
-
+            _spriteBatch.DrawString(_font, $"Счет: {_field.SizeSnake}", 
+                new Vector2(502, 602), Color.Black);
+            _spriteBatch.DrawString(_font, $"Счет: {_field.SizeSnake}", 
+                new Vector2(500, 600), Color.Gold);
             _spriteBatch.End();
 
             base.Draw(gameTime);

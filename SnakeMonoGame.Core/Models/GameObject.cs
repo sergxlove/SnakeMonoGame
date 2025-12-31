@@ -27,6 +27,7 @@ namespace SnakeMonoGame.Core.Models
             new(2, 5)
         };
         public PairCoordinate Apple { get; set; } = new PairCoordinate(10, 5);
+        public int SizeSnake { get; set; } = 3;
         private Random _random = new Random();
 
         public void MoveSnake(VariableMove move, bool isEatApple)
@@ -55,6 +56,7 @@ namespace SnakeMonoGame.Core.Models
             if(isEatApple)
             {
                 newSnake.AddRange(Snake);
+                SizeSnake++;
             }
             else
             {
