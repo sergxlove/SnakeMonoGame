@@ -15,6 +15,7 @@ namespace SnakeMonoGame
         private Vector2 _position = new Vector2(0, 0);
         private Rectangle[] _frames;
         private Rectangle[] _framesMenu;
+        private Rectangle[] _buttonRectangle;
         private int _frameSize = 50;
         private Point _currentFrame = new Point(0, 0);
         private Point _spriteSize = new Point(7, 1);
@@ -27,7 +28,9 @@ namespace SnakeMonoGame
         private bool _isEnableLoseWindow = false;
         private bool _isEnableWinWindows = false;
         private bool _isEnableMenu = false;
-        private bool _isGameStop = false;
+        private bool _isGameStop = true;
+        private MouseState _currentClick;
+        private MouseState _previousClick;
 
         public Game1()
         {
@@ -39,6 +42,7 @@ namespace SnakeMonoGame
             _graphics.PreferredBackBufferHeight = 800;
             _frames = new Rectangle[7];
             _framesMenu = new Rectangle[8];
+            _buttonRectangle = new Rectangle[5];
             _field = new GameField();
         }
 
@@ -75,25 +79,29 @@ namespace SnakeMonoGame
                 switch (key)
                 {
                     case Keys.W:
-                        if (_isGameStop) _isGameStop = false;
+                        if (_isGameStop && !_isEnableMenu && !_isEnableLoseWindow && !_isEnableWinWindows)
+                            _isGameStop = false;
                         if (_currentMove == VariableMove.Up) continue;
                         if (_currentMove == VariableMove.Down) continue;
                         _currentMove = VariableMove.Up;
                         break;
                     case Keys.A:
-                        if (_isGameStop) _isGameStop = false;
+                        if (_isGameStop && !_isEnableMenu && !_isEnableLoseWindow && !_isEnableWinWindows)
+                            _isGameStop = false;
                         if (_currentMove == VariableMove.Left) continue;
                         if (_currentMove == VariableMove.Rigth) continue;
                         _currentMove = VariableMove.Left;
                         break;
                     case Keys.S:
-                        if (_isGameStop) _isGameStop = false;
+                        if (_isGameStop && !_isEnableMenu && !_isEnableLoseWindow && !_isEnableWinWindows)
+                            _isGameStop = false;
                         if (_currentMove == VariableMove.Down) continue;
                         if (_currentMove == VariableMove.Up) continue;
                         _currentMove = VariableMove.Down;
                         break;
                     case Keys.D:
-                        if (_isGameStop) _isGameStop = false;
+                        if (_isGameStop && !_isEnableMenu && !_isEnableLoseWindow && !_isEnableWinWindows)
+                            _isGameStop = false;
                         if (_currentMove == VariableMove.Rigth) continue;
                         if (_currentMove == VariableMove.Left) continue;
                         _currentMove = VariableMove.Rigth;
@@ -104,31 +112,81 @@ namespace SnakeMonoGame
                         break;
                 }
             }
-            if (_isGameStop) return;
-            if (_field.CheckMoveSnake(_currentMove))
+            _previousClick = _currentClick;
+            _currentClick = Mouse.GetState();
+            if (_currentClick.LeftButton == ButtonState.Pressed &&
+                _previousClick.LeftButton == ButtonState.Released)
             {
-                if (_cuurentSpeedSnake == _speedSnake)
+                if (_buttonRectangle[0].Contains(_currentClick.X, _currentClick.Y))
+                {
+                    _isEnableMenu = !_isEnableMenu;
+                    _isGameStop = true;
+                }
+                if (_isEnableLoseWindow && _buttonRectangle[4].Contains(_currentClick.X, _currentClick.Y))
+                {
+                    _field.RestartGame();
+                    _isEnableLoseWindow = false;
+                    _isGameStop = true;
+                }
+                if (_isEnableWinWindows && _buttonRectangle[4].Contains(_currentClick.X, _currentClick.Y))
+                {
+                    _field.RestartGame();
+                    _isEnableWinWindows = false;
+                    _isGameStop = true;
+                }
+                if(_isEnableMenu)
+                {
+                    if (_buttonRectangle[1].Contains(_currentClick.X, _currentClick.Y))
+                    {
+                        _field.NeedAppleToWin = 20;
+                        _speedSnake = 5;
+                        _isEnableMenu = false;
+                        _field.RestartGame();
+                    }
+                    if (_buttonRectangle[2].Contains(_currentClick.X, _currentClick.Y))
+                    {
+                        _field.NeedAppleToWin = 40;
+                        _speedSnake = 3;
+                        _isEnableMenu = false;
+                        _field.RestartGame();
+                    }
+                    if (_buttonRectangle[3].Contains(_currentClick.X, _currentClick.Y))
+                    {
+                        _field.NeedAppleToWin = 50;
+                        _speedSnake = 1;
+                        _isEnableMenu = false;
+                        _field.RestartGame();
+                    }
+                }
+
+            }
+            if (_isGameStop) return;
+            if (_cuurentSpeedSnake == _speedSnake)
+            {
+                if (_field.CheckMoveSnake(_currentMove))
                 {
                     _isEatApple = CollideApple();
                     _field.MoveSnake(_currentMove, _isEatApple);
                     if (_isEatApple) _field.GenerateApple();
                     _cuurentSpeedSnake = 0;
                     _isEatApple = false;
+                    if(_field.CheckWin())
+                    {
+                        _isEnableWinWindows = true;
+                        _isGameStop = true;
+                    }
                 }
                 else
                 {
-                    _cuurentSpeedSnake++;
+                    _isEnableLoseWindow = true;
+                    _isGameStop = true;
                 }
             }
             else
             {
-                _isEnableLoseWindow = true;
+                _cuurentSpeedSnake++;
             }
-            MouseState mouseState = Mouse.GetState();
-            if(mouseState.LeftButton == ButtonState.Pressed)
-            {
-                if (_framesMenu[4].Contains(mouseState.X, mouseState.Y)) _isEnableMenu = true;
-            }
+            
 
             base.Update(gameTime);
         }
@@ -173,8 +231,8 @@ namespace SnakeMonoGame
                     Vector2.Zero, 1, SpriteEffects.None, 0);
             }
 
-            _spriteBatch.Draw(_textureMenu, new Vector2(100, 630), _framesMenu[4], Color.White,
-                0, Vector2.Zero, 1, SpriteEffects.None, 0);
+            _spriteBatch.Draw(_textureMenu, new Vector2(_buttonRectangle[0].X, _buttonRectangle[0].Y),
+                _framesMenu[4], Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
 
             _spriteBatch.DrawString(_font, $"Счет: {_field.SizeSnake}", 
                 new Vector2(502, 602), Color.Black);
@@ -190,24 +248,26 @@ namespace SnakeMonoGame
             {
                 _spriteBatch.Draw(_textureMenu, new Vector2(100, 100), _framesMenu[1], Color.White, 0,
                     Vector2.Zero, 1, SpriteEffects.None, 0);
-                _spriteBatch.Draw(_textureMenu, new Vector2(200, 100), _framesMenu[3], Color.White, 0,
+                _spriteBatch.Draw(_textureMenu, new Vector2(200, 300), _framesMenu[3], Color.White, 0,
                     Vector2.Zero, 1, SpriteEffects.None, 0);
             }
             if(_isEnableWinWindows)
             {
                 _spriteBatch.Draw(_textureMenu, new Vector2(100, 100), _framesMenu[2], Color.White, 0,
                     Vector2.Zero, 1, SpriteEffects.None, 0);
+                _spriteBatch.Draw(_textureMenu, new Vector2(200, 300), _framesMenu[3], Color.White, 0,
+                    Vector2.Zero, 1, SpriteEffects.None, 0);
             }
             if(_isEnableMenu)
             {
-                _spriteBatch.Draw(_textureMenu, new Vector2(100, 100), _framesMenu[0], Color.White, 0,
+                _spriteBatch.Draw(_textureMenu, new Vector2(50, 100), _framesMenu[0], Color.White, 0,
                     Vector2.Zero, 1, SpriteEffects.None, 0);
-                _spriteBatch.Draw(_textureMenu, new Vector2(150, 250), _framesMenu[5], Color.White, 0,
-                    Vector2.Zero, 1, SpriteEffects.None, 0);
-                _spriteBatch.Draw(_textureMenu, new Vector2(150, 350), _framesMenu[6], Color.White, 0,
-                    Vector2.Zero, 1, SpriteEffects.None, 0);
-                _spriteBatch.Draw(_textureMenu, new Vector2(150, 450), _framesMenu[7], Color.White, 0,
-                    Vector2.Zero, 1, SpriteEffects.None, 0);
+                _spriteBatch.Draw(_textureMenu, new Vector2(_buttonRectangle[1].X, _buttonRectangle[1].Y),
+                    _framesMenu[5], Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+                _spriteBatch.Draw(_textureMenu, new Vector2(_buttonRectangle[2].X, _buttonRectangle[2].Y),
+                    _framesMenu[6], Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+                _spriteBatch.Draw(_textureMenu, new Vector2(_buttonRectangle[3].X, _buttonRectangle[3].Y),
+                    _framesMenu[7], Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
             }
 
             _spriteBatch.End();
@@ -245,7 +305,6 @@ namespace SnakeMonoGame
             Rectangle appleRectangle = new Rectangle(_field.Apple.X * _frameSize,
                 _field.Apple.Y * _frameSize, _frameSize, _frameSize);
             return headSnakeRectangle.Intersects(appleRectangle);
-
         }
 
         protected void CreateRectangleMenu()
@@ -258,6 +317,12 @@ namespace SnakeMonoGame
             _framesMenu[5] = new Rectangle(600, 200, 200, 75);
             _framesMenu[6] = new Rectangle(600, 275, 200, 75);
             _framesMenu[7] = new Rectangle(600, 350, 200, 75);
+
+            _buttonRectangle[0] = new Rectangle(40, 615, 300, 100);
+            _buttonRectangle[1] = new Rectangle(150, 200, 200, 75);
+            _buttonRectangle[2] = new Rectangle(150, 300, 200, 75);
+            _buttonRectangle[3] = new Rectangle(150, 400, 200, 75);
+            _buttonRectangle[4] = new Rectangle(200, 300, 300, 100);
         }
     }
 }

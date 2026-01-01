@@ -28,6 +28,7 @@ namespace SnakeMonoGame.Core.Models
         };
         public PairCoordinate Apple { get; set; } = new PairCoordinate(10, 5);
         public int SizeSnake { get; set; } = 3;
+        public int NeedAppleToWin { get; set; } = 20;
         private Random _random = new Random();
 
         public void MoveSnake(VariableMove move, bool isEatApple)
@@ -95,6 +96,12 @@ namespace SnakeMonoGame.Core.Models
                 if (pr.X == positionHead.X && pr.Y == positionHead.Y) return false;
             }
             return true;
+        }
+
+        public bool CheckWin()
+        {
+            if (SizeSnake >= NeedAppleToWin) return true;
+            return false;
         }
 
         public void GenerateApple()
