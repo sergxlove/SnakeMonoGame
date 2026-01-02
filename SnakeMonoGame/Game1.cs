@@ -32,6 +32,8 @@ namespace SnakeMonoGame
         private MouseState _previousClick;
         private float _keyPressCooldown = 0f;
         private KeyboardState _previousKey;
+        private int _frameHead = 5;
+        private string _levelName = "Легкий";
 
         public Game1()
         {
@@ -40,8 +42,8 @@ namespace SnakeMonoGame
             IsMouseVisible = true;
             TargetElapsedTime = TimeSpan.FromSeconds(1.0 / 60.0);
             _graphics.PreferredBackBufferWidth = 700;
-            _graphics.PreferredBackBufferHeight = 800;
-            _frames = new Rectangle[7];
+            _graphics.PreferredBackBufferHeight = 750;
+            _frames = new Rectangle[9];
             _framesMenu = new Rectangle[8];
             _buttonRectangle = new Rectangle[5];
             _field = new GameField();
@@ -59,7 +61,7 @@ namespace SnakeMonoGame
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
-            _texture = Content.Load<Texture2D>("texturesGame");
+            _texture = Content.Load<Texture2D>("textureSnake");
             _textureMenu = Content.Load<Texture2D>("menuSprite");
             _font = Content.Load<SpriteFont>("Arial");
         }
@@ -85,6 +87,7 @@ namespace SnakeMonoGame
                     {
                         _currentMove = VariableMove.Up;
                         _keyPressCooldown = 0.2f;
+                        _frameHead = 3;
                     }
                 }
                 else if (keyboardState.IsKeyDown(Keys.A) && _previousKey.IsKeyUp(Keys.A))
@@ -96,6 +99,7 @@ namespace SnakeMonoGame
                     {
                         _currentMove = VariableMove.Left;
                         _keyPressCooldown = 0.2f;
+                        _frameHead = 6;
                     }
                 }
                 else if (keyboardState.IsKeyDown(Keys.S) && _previousKey.IsKeyUp(Keys.S))
@@ -106,6 +110,7 @@ namespace SnakeMonoGame
                     {
                         _currentMove = VariableMove.Down;
                         _keyPressCooldown = 0.2f;
+                        _frameHead = 4;
                     }
                 }
                 else if (keyboardState.IsKeyDown(Keys.D) && _previousKey.IsKeyUp(Keys.D))
@@ -116,6 +121,7 @@ namespace SnakeMonoGame
                     {
                         _currentMove = VariableMove.Rigth;
                         _keyPressCooldown = 0.2f;
+                        _frameHead = 5;
                     }
                 }
                 else if (keyboardState.IsKeyDown(Keys.R) && _previousKey.IsKeyUp(Keys.R))
@@ -147,12 +153,14 @@ namespace SnakeMonoGame
                     _field.RestartGame();
                     _isEnableLoseWindow = false;
                     _isGameStop = true;
+                    _frameHead = 5;
                 }
                 if (_isEnableWinWindows && _buttonRectangle[4].Contains(_currentClick.X, _currentClick.Y))
                 {
                     _field.RestartGame();
                     _isEnableWinWindows = false;
                     _isGameStop = true;
+                    _frameHead = 5;
                 }
                 if(_isEnableMenu)
                 {
@@ -164,6 +172,8 @@ namespace SnakeMonoGame
                         _currentMove = VariableMove.Rigth;
                         _isEnableMenu = false;
                         _field.RestartGame();
+                        _frameHead = 5;
+                        _levelName = "Легкий";
                     }
                     if (_buttonRectangle[2].Contains(_currentClick.X, _currentClick.Y))
                     {
@@ -173,6 +183,8 @@ namespace SnakeMonoGame
                         _currentMove = VariableMove.Rigth;
                         _isEnableMenu = false;
                         _field.RestartGame();
+                        _frameHead = 5;
+                        _levelName = "Средний";
                     }
                     if (_buttonRectangle[3].Contains(_currentClick.X, _currentClick.Y))
                     {
@@ -182,6 +194,8 @@ namespace SnakeMonoGame
                         _currentMove = VariableMove.Rigth;
                         _isEnableMenu = false;
                         _field.RestartGame();
+                        _frameHead = 5;
+                        _levelName = "Сложный";
                     }
                 }
             }
@@ -229,42 +243,47 @@ namespace SnakeMonoGame
                 {
                     _needFrame = GameObjectToInt(_field.Field[i, j]);
                     _spriteBatch.Draw(_texture, _position, _frames[_needFrame], Color.White, 0, 
-                        Vector2.Zero, 1, SpriteEffects.None, 0);
+                        Vector2.Zero, 0.25f, SpriteEffects.None, 0);
                     _position.X += _frameSize;
                 }
                 _position.X = 0;
                 _position.Y += _frameSize; 
             }
 
-            _needFrame = 6;
+            _needFrame = 8;
             _position.X = _field.Apple.X * _frameSize;
             _position.Y = _field.Apple.Y * _frameSize;
             _spriteBatch.Draw(_texture, _position, _frames[_needFrame], Color.White, 0,
-                    Vector2.Zero, 1, SpriteEffects.None, 0);
+                    Vector2.Zero, 0.25f, SpriteEffects.None, 0);
 
-            _needFrame = 3;
             _position.X = _field.Snake[0].X * _frameSize;
             _position.Y = _field.Snake[0].Y * _frameSize;
-            _spriteBatch.Draw(_texture, _position, _frames[_needFrame], Color.White, 0,
-                    Vector2.Zero, 1, SpriteEffects.FlipVertically, 0);
-            _needFrame = 4;
+            _spriteBatch.Draw(_texture, _position, _frames[_frameHead], Color.White, 0,
+                    Vector2.Zero, 0.25f, SpriteEffects.None, 0);
+
+            _needFrame = 7;
             for (int i = 1; i < _field.Snake.Count; i++)
             {
                 _position.X = _field.Snake[i].X * _frameSize;
                 _position.Y = _field.Snake[i].Y * _frameSize;
                 _spriteBatch.Draw(_texture, _position, _frames[_needFrame], Color.White, 0,
-                    Vector2.Zero, 1, SpriteEffects.None, 0);
+                    Vector2.Zero, 0.25f, SpriteEffects.None, 0);
             }
 
             _spriteBatch.Draw(_textureMenu, new Vector2(_buttonRectangle[0].X, _buttonRectangle[0].Y),
                 _framesMenu[4], Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
 
             _spriteBatch.DrawString(_font, $"Счет: {_field.SizeSnake}", 
-                new Vector2(502, 602), Color.Black);
+                new Vector2(402, 602), Color.Black);
             _spriteBatch.DrawString(_font, $"Счет: {_field.SizeSnake}", 
-                new Vector2(500, 600), Color.Gold);
+                new Vector2(400, 600), Color.Gold);
 
-            if(_isGameStop)
+            _spriteBatch.DrawString(_font, $"Уровень: {_levelName}",
+                new Vector2(402, 632), Color.Black);
+            _spriteBatch.DrawString(_font, $"Уровень: {_levelName}",
+                new Vector2(400, 630), Color.Gold);
+
+            if (_isGameStop)
             {
                 _spriteBatch.DrawString(_font, "Нажмите WASD для старта", 
                     new Vector2(202, 152), Color.Black);
@@ -341,32 +360,33 @@ namespace SnakeMonoGame
 
         protected void CreateRectangleMenu()
         {
-            _framesMenu[0] = new Rectangle(0, 0, 600, 450);
-            _framesMenu[1] = new Rectangle(0, 450, 500, 350);
-            _framesMenu[2] = new Rectangle(0, 800, 500, 350);
-            _framesMenu[3] = new Rectangle(600, 0, 300, 100);
-            _framesMenu[4] = new Rectangle(600, 100, 300, 100);
-            _framesMenu[5] = new Rectangle(600, 200, 200, 75);
-            _framesMenu[6] = new Rectangle(600, 275, 200, 75);
-            _framesMenu[7] = new Rectangle(600, 350, 200, 75);
+            _framesMenu[0] = new Rectangle(0, 0, 600, 450); // level menu
+            _framesMenu[1] = new Rectangle(0, 450, 500, 350); // lose menu
+            _framesMenu[2] = new Rectangle(0, 800, 500, 350); // win menu
+            _framesMenu[3] = new Rectangle(600, 0, 300, 100); // restart button
+            _framesMenu[4] = new Rectangle(600, 100, 300, 100); // menu button
+            _framesMenu[5] = new Rectangle(600, 200, 200, 75); // light level button
+            _framesMenu[6] = new Rectangle(600, 275, 200, 75); // middle level button
+            _framesMenu[7] = new Rectangle(600, 350, 200, 75); // hard level button
 
-            _buttonRectangle[0] = new Rectangle(40, 615, 300, 100);
-            _buttonRectangle[1] = new Rectangle(150, 200, 200, 75);
-            _buttonRectangle[2] = new Rectangle(150, 300, 200, 75);
-            _buttonRectangle[3] = new Rectangle(150, 400, 200, 75);
-            _buttonRectangle[4] = new Rectangle(200, 300, 300, 100);
+            _buttonRectangle[0] = new Rectangle(40, 615, 300, 100); // button menu 
+            _buttonRectangle[1] = new Rectangle(150, 200, 200, 75); // light level button
+            _buttonRectangle[2] = new Rectangle(150, 300, 200, 75); // middle level button
+            _buttonRectangle[3] = new Rectangle(150, 400, 200, 75); // hard level button
+            _buttonRectangle[4] = new Rectangle(200, 300, 300, 100); // restart button
         }
 
         protected void CreateFrame()
         {
-            Point currentFrame = new Point(0, 0);
-            Point spriteSize = new Point(7, 1);
-            for (int i = 0; currentFrame.X < spriteSize.X; i++)
-            {
-                _frames[i] = new Rectangle(currentFrame.X * _frameSize, currentFrame.Y * _frameSize,
-                    _frameSize, _frameSize);
-                currentFrame.X++;
-            }
+            _frames[0] = new Rectangle(0, 0, 200, 200);
+            _frames[1] = new Rectangle(200, 0, 200, 200);
+            _frames[2] = new Rectangle(400, 0, 200, 200);
+            _frames[3] = new Rectangle(600, 0, 200, 200);
+            _frames[4] = new Rectangle(800, 0, 200, 200);
+            _frames[5] = new Rectangle(1000, 0, 200, 200);
+            _frames[6] = new Rectangle(1200, 0, 200, 200);
+            _frames[7] = new Rectangle(1400, 0, 200, 200);
+            _frames[8] = new Rectangle(1600, 0, 200, 200);
         }
     }
 }
