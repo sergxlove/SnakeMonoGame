@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using SnakeMonoGame.Core.Models;
+using System;
 
 namespace SnakeMonoGame
 {
@@ -17,12 +18,10 @@ namespace SnakeMonoGame
         private Rectangle[] _framesMenu;
         private Rectangle[] _buttonRectangle;
         private int _frameSize = 50;
-        private Point _currentFrame = new Point(0, 0);
-        private Point _spriteSize = new Point(7, 1);
         private GameField _field;
         private int _needFrame = 0;
         private VariableMove _currentMove = VariableMove.Rigth;
-        private int _speedSnake = 7;
+        private int _speedSnake = 12;
         private int _cuurentSpeedSnake = 0;
         private bool _isEatApple = false;
         private bool _isEnableLoseWindow = false;
@@ -31,13 +30,15 @@ namespace SnakeMonoGame
         private bool _isGameStop = true;
         private MouseState _currentClick;
         private MouseState _previousClick;
+        private float _keyPressCooldown = 0f;
+        private KeyboardState _previousKey;
 
         public Game1()
         {
             _graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
-            TargetElapsedTime = new System.TimeSpan(0, 0, 0, 0, 50);
+            TargetElapsedTime = TimeSpan.FromSeconds(1.0 / 60.0);
             _graphics.PreferredBackBufferWidth = 700;
             _graphics.PreferredBackBufferHeight = 800;
             _frames = new Rectangle[7];
@@ -48,6 +49,10 @@ namespace SnakeMonoGame
 
         protected override void Initialize()
         {
+            _previousClick = Mouse.GetState();
+            _previousKey = Keyboard.GetState();
+            CreateFrame();
+            CreateRectangleMenu();
             base.Initialize();
         }
 
@@ -57,61 +62,76 @@ namespace SnakeMonoGame
             _texture = Content.Load<Texture2D>("texturesGame");
             _textureMenu = Content.Load<Texture2D>("menuSprite");
             _font = Content.Load<SpriteFont>("Arial");
-
-            for (int i = 0; _currentFrame.X < _spriteSize.X; i++)
-            {
-                _frames[i] = new Rectangle(_currentFrame.X * _frameSize, _currentFrame.Y * _frameSize, 
-                    _frameSize, _frameSize);
-                _currentFrame.X++;
-            }
-            CreateRectangleMenu();
         }
 
         protected override void Update(GameTime gameTime)
         {
+            if (_keyPressCooldown > 0)
+            {
+                _keyPressCooldown -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+            }
             KeyboardState keyboardState = Keyboard.GetState();
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed
                 || keyboardState.IsKeyDown(Keys.Escape))
                 Exit();
-
-            foreach (var key in keyboardState.GetPressedKeys())
+            if (_keyPressCooldown <= 0)
             {
-                switch (key)
+                if (keyboardState.IsKeyDown(Keys.W) && _previousKey.IsKeyUp(Keys.W))
                 {
-                    case Keys.W:
-                        if (_isGameStop && !_isEnableMenu && !_isEnableLoseWindow && !_isEnableWinWindows)
-                            _isGameStop = false;
-                        if (_currentMove == VariableMove.Up) continue;
-                        if (_currentMove == VariableMove.Down) continue;
+                    if (_isGameStop && !_isEnableMenu && !_isEnableLoseWindow && !_isEnableWinWindows)
+                        _isGameStop = false;
+
+                    if (_currentMove != VariableMove.Up && _currentMove != VariableMove.Down)
+                    {
                         _currentMove = VariableMove.Up;
-                        break;
-                    case Keys.A:
-                        if (_isGameStop && !_isEnableMenu && !_isEnableLoseWindow && !_isEnableWinWindows)
-                            _isGameStop = false;
-                        if (_currentMove == VariableMove.Left) continue;
-                        if (_currentMove == VariableMove.Rigth) continue;
+                        _keyPressCooldown = 0.2f;
+                    }
+                }
+                else if (keyboardState.IsKeyDown(Keys.A) && _previousKey.IsKeyUp(Keys.A))
+                {
+                    if (_isGameStop && !_isEnableMenu && !_isEnableLoseWindow && !_isEnableWinWindows)
+                        _isGameStop = false;
+
+                    if (_currentMove != VariableMove.Left && _currentMove != VariableMove.Rigth)
+                    {
                         _currentMove = VariableMove.Left;
-                        break;
-                    case Keys.S:
-                        if (_isGameStop && !_isEnableMenu && !_isEnableLoseWindow && !_isEnableWinWindows)
-                            _isGameStop = false;
-                        if (_currentMove == VariableMove.Down) continue;
-                        if (_currentMove == VariableMove.Up) continue;
+                        _keyPressCooldown = 0.2f;
+                    }
+                }
+                else if (keyboardState.IsKeyDown(Keys.S) && _previousKey.IsKeyUp(Keys.S))
+                {
+                    if (_isGameStop && !_isEnableMenu && !_isEnableLoseWindow && !_isEnableWinWindows)
+                        _isGameStop = false;
+                    if (_currentMove != VariableMove.Down && _currentMove != VariableMove.Up)
+                    {
                         _currentMove = VariableMove.Down;
-                        break;
-                    case Keys.D:
-                        if (_isGameStop && !_isEnableMenu && !_isEnableLoseWindow && !_isEnableWinWindows)
-                            _isGameStop = false;
-                        if (_currentMove == VariableMove.Rigth) continue;
-                        if (_currentMove == VariableMove.Left) continue;
+                        _keyPressCooldown = 0.2f;
+                    }
+                }
+                else if (keyboardState.IsKeyDown(Keys.D) && _previousKey.IsKeyUp(Keys.D))
+                {
+                    if (_isGameStop && !_isEnableMenu && !_isEnableLoseWindow && !_isEnableWinWindows)
+                        _isGameStop = false;
+                    if (_currentMove != VariableMove.Rigth && _currentMove != VariableMove.Left)
+                    {
                         _currentMove = VariableMove.Rigth;
-                        break;
-                    case Keys.R:
-                        _field.RestartGame();
-                        _currentMove = VariableMove.Rigth;
-                        break;
+                        _keyPressCooldown = 0.2f;
+                    }
+                }
+                else if (keyboardState.IsKeyDown(Keys.R) && _previousKey.IsKeyUp(Keys.R))
+                {
+                    _field.RestartGame();
+                    _currentMove = VariableMove.Rigth;
+                    _keyPressCooldown = 0.5f;
+                }
+                else if (keyboardState.IsKeyDown(Keys.M) && _previousKey.IsKeyUp(Keys.M))
+                {
+                    _isEnableMenu = !_isEnableMenu;
+                    _isGameStop = true;
+                    _keyPressCooldown = 0.5f;
                 }
             }
+
             _previousClick = _currentClick;
             _currentClick = Mouse.GetState();
             if (_currentClick.LeftButton == ButtonState.Pressed &&
@@ -139,26 +159,31 @@ namespace SnakeMonoGame
                     if (_buttonRectangle[1].Contains(_currentClick.X, _currentClick.Y))
                     {
                         _field.NeedAppleToWin = 20;
-                        _speedSnake = 5;
+                        _speedSnake = 12;
+                        _cuurentSpeedSnake = 0;
+                        _currentMove = VariableMove.Rigth;
                         _isEnableMenu = false;
                         _field.RestartGame();
                     }
                     if (_buttonRectangle[2].Contains(_currentClick.X, _currentClick.Y))
                     {
                         _field.NeedAppleToWin = 40;
-                        _speedSnake = 3;
+                        _speedSnake = 9;
+                        _cuurentSpeedSnake = 0;
+                        _currentMove = VariableMove.Rigth;
                         _isEnableMenu = false;
                         _field.RestartGame();
                     }
                     if (_buttonRectangle[3].Contains(_currentClick.X, _currentClick.Y))
                     {
                         _field.NeedAppleToWin = 50;
-                        _speedSnake = 1;
+                        _speedSnake = 7;
+                        _cuurentSpeedSnake = 0;
+                        _currentMove = VariableMove.Rigth;
                         _isEnableMenu = false;
                         _field.RestartGame();
                     }
                 }
-
             }
             if (_isGameStop) return;
             if (_cuurentSpeedSnake == _speedSnake)
@@ -174,20 +199,20 @@ namespace SnakeMonoGame
                     {
                         _isEnableWinWindows = true;
                         _isGameStop = true;
+                        _currentMove = VariableMove.Rigth;
                     }
                 }
                 else
                 {
                     _isEnableLoseWindow = true;
                     _isGameStop = true;
+                    _currentMove = VariableMove.Rigth;
                 }
             }
             else
             {
                 _cuurentSpeedSnake++;
             }
-            
-
             base.Update(gameTime);
         }
 
@@ -238,10 +263,17 @@ namespace SnakeMonoGame
                 new Vector2(502, 602), Color.Black);
             _spriteBatch.DrawString(_font, $"Счет: {_field.SizeSnake}", 
                 new Vector2(500, 600), Color.Gold);
+
             if(_isGameStop)
             {
                 _spriteBatch.DrawString(_font, "Нажмите WASD для старта", 
-                    new Vector2(200, 200), Color.White);
+                    new Vector2(202, 152), Color.Black);
+                _spriteBatch.DrawString(_font, "Нажмите WASD для старта",
+                    new Vector2(200, 150), Color.Gold);
+                _spriteBatch.DrawString(_font, $"Нужно набрать {_field.NeedAppleToWin} яблок", 
+                    new Vector2(202, 182), Color.Black);
+                _spriteBatch.DrawString(_font, $"Нужно набрать {_field.NeedAppleToWin} яблок",
+                    new Vector2(200, 180), Color.Gold);
             }
 
             if(_isEnableLoseWindow)
@@ -323,6 +355,18 @@ namespace SnakeMonoGame
             _buttonRectangle[2] = new Rectangle(150, 300, 200, 75);
             _buttonRectangle[3] = new Rectangle(150, 400, 200, 75);
             _buttonRectangle[4] = new Rectangle(200, 300, 300, 100);
+        }
+
+        protected void CreateFrame()
+        {
+            Point currentFrame = new Point(0, 0);
+            Point spriteSize = new Point(7, 1);
+            for (int i = 0; currentFrame.X < spriteSize.X; i++)
+            {
+                _frames[i] = new Rectangle(currentFrame.X * _frameSize, currentFrame.Y * _frameSize,
+                    _frameSize, _frameSize);
+                currentFrame.X++;
+            }
         }
     }
 }
