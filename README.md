@@ -1,5 +1,12 @@
 # SnakeMonoGame
 
+![Static Badge](https://img.shields.io/badge/language-C%23-red)
+![Static Badge](https://img.shields.io/badge/powered_by-.NET_8-blue)
+![Static Badge](https://img.shields.io/badge/platforms-Windows-purple)
+![Static Badge](https://img.shields.io/badge/version-1.0-orange)
+![Static Badge](https://img.shields.io/badge/developer-sergxlove-green)
+![Static Badge](https://img.shields.io/badge/year-2026-green)
+
 ## Preview
 
 ![imageGame](https://github.com/sergxlove/SnakeMonoGame/blob/master/resourсe/game.png)
